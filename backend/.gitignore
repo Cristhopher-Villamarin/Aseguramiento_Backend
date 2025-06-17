@@ -1,3 +1,8 @@
+# Dependencias de Node
 node_modules/
-.env
 
+# Clave de servicio de Firebase (nunca subirla)
+credentialsFirebase.json
+
+# Variables de entorno locales
+.env
