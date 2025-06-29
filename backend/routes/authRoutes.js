@@ -2,6 +2,8 @@ const express = require('express');
 const { body } = require('express-validator');
 const router = express.Router();
 const authController = require('../controllers/authController');
+const tiktokController = require('../controllers/tiktokController');
+const facebookController = require('../controllers/facebookController');
 
 // Validaciones
 const validateRegister = [
@@ -16,5 +18,8 @@ const validateLogin = [
 
 router.post('/register', validateRegister, authController.register);
 router.post('/login', validateLogin, authController.login);
+
+router.post('/tiktok/comments', tiktokController.getTikTokComments);
+router.post('/facebook/comments', facebookController.getFacebookComments);
 
 module.exports = router;
