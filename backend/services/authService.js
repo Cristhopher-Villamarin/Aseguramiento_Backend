@@ -1,4 +1,4 @@
-const admin = require('../config/firebase');
+const { admin } = require('../config/firebase');
 const axios = require('axios');
 require('dotenv').config();
 
