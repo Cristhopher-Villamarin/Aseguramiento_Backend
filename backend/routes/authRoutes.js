@@ -4,6 +4,8 @@ const router = express.Router();
 const authController = require('../controllers/authController');
 const tiktokController = require('../controllers/tiktokController');
 const facebookController = require('../controllers/facebookController');
+const twitterController = require('../controllers/twitterController');
+const instagramController = require('../controllers/instagramController');
 
 // Validaciones
 const validateRegister = [
@@ -21,5 +23,7 @@ router.post('/login', validateLogin, authController.login);
 
 router.post('/tiktok/comments', tiktokController.getTikTokComments);
 router.post('/facebook/comments', facebookController.getFacebookComments);
+router.post('/twitter/comments', twitterController.getTwitterComments);
+router.post('/instagram/comments', instagramController.getInstagramComments);
 
 module.exports = router;
