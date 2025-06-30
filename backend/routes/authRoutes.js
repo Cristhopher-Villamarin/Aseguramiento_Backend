@@ -5,6 +5,9 @@ const authController = require('../controllers/authController');
 const topicController = require('../controllers/topicController');
 const tiktokController = require('../controllers/tiktokController');
 const facebookController = require('../controllers/facebookController');
+const twitterController = require('../controllers/twitterController');
+const instagramController = require('../controllers/instagramController');
+
 const authMiddleware = require('../middleware/authMiddleware');
 
 // Validaciones para autenticación
@@ -42,5 +45,7 @@ router.delete('/topics/:topicId', authMiddleware, topicController.deleteTopic);
 // Rutas existentes para comentarios
 router.post('/tiktok/comments', tiktokController.getTikTokComments);
 router.post('/facebook/comments', facebookController.getFacebookComments);
+router.post('/twitter/comments', twitterController.getTwitterComments);
+router.post('/instagram/comments', instagramController.getInstagramComments);
 
 module.exports = router;
