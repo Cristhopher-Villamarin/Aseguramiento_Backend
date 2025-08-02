@@ -3,6 +3,7 @@ const cors = require('cors');
 require('dotenv').config();
 
 const authRoutes = require('./routes/authRoutes');
+const socialMediaRoutes = require('./routes/socialMediaroutes');
 
 const app = express();
 
@@ -12,6 +13,7 @@ app.use(express.json());
 
 // Rutasss
 app.use('/api/auth', authRoutes);
+app.use('/api/social', socialMediaRoutes);
 
 // Manejo de erroresss
 app.use((err, req, res, next) => {

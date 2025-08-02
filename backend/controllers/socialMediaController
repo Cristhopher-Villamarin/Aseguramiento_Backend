@@ -1,0 +1,98 @@
+const { ApifyClient } = require('apify-client');
+
+// Initialize the ApifyClient with a token
+const client = new ApifyClient({
+    token: 'apify_api_u4HBr8LyQL9FIGd0sejBavopuqvhxZ3Ryt0t',
+});
+
+// Platform-specific configurations
+const platformConfig = {
+    facebook: {
+        actorId: 'apify~facebook-comments-scraper',
+        domain: 'facebook.com',
+        input: (url) => ({
+            startUrls: [{ url }],
+            resultsLimit: 50,
+            includeNestedComments: false,
+            viewOption: 'RANKED_UNFILTERED'
+        }),
+        errorMessage: 'La URL debe ser un enlace válido de Facebook (contiene facebook.com)'
+    },
+    twitter: {
+        actorId: 'scraper_one~x-post-replies-scraper',
+        domain: 'x.com',
+        input: (url) => ({
+            postUrls: [{ url }],
+            rankingMode: 'Relevance',
+            maxItems: 10
+        }),
+        errorMessage: 'La URL debe ser un enlace válido de Twitter (contiene x.com)'
+    },
+    instagram: {
+        actorId: 'apify~instagram-comment-scraper',
+        domain: 'instagram.com',
+        input: (url) => ({
+            directUrls: [url],
+            resultsLimit: 15
+        }),
+        errorMessage: 'La URL debe ser un enlace válido de Instagram (contiene instagram.com)'
+    },
+    tiktok: {
+        actorId: 'clockworks~tiktok-scraper',
+        domain: 'tiktok.com',
+        input: (url) => ({
+            postURLs: [url],
+            commentsPerPost: 15,
+            resultsPerPage: 100,
+            profileScrapeSections: ['videos'],
+            profileSorting: 'latest',
+            excludePinnedPosts: false
+        }),
+        errorMessage: 'La URL debe ser un enlace válido de TikTok (contiene tiktok.com)'
+    }
+};
+
+const getSocialMediaComments = async (req, res) => {
+    try {
+        const { url, platform } = req.body; // Expect URL and platform in the request body
+
+        if (!url) {
+            return res.status(400).json({ error: 'La URL de la publicación es requerida' });
+        }
+
+        if (!platform || !platformConfig[platform]) {
+            return res.status(400).json({ error: 'Plataforma no válida o no especificada' });
+        }
+
+        const config = platformConfig[platform];
+
+        // Validate URL domain
+        const urlDomain = new URL(url).hostname.toLowerCase();
+        if (!urlDomain.includes(config.domain)) {
+            return res.status(400).json({ error: config.errorMessage });
+        }
+
+        // Prepare input for the actor
+        const input = config.input(url);
+
+        // Execute the actor synchronously and get dataset items
+        const run = await client.actor(config.actorId).call(input);
+
+        // Fetch dataset items
+        const { items } = await client.dataset(run.defaultDatasetId).listItems();
+
+        // Filter and extract comment texts
+        const comments = items
+            .map(item => item.comments || item)
+            .flat()
+            .filter(comment => comment.text)
+            .map(comment => comment.text);
+
+        res.status(200).json({ comments });
+    } catch (error) {
+        console.error(`Error al extraer comentarios de ${platform}:`, error);
+        res.status(500).json({ error: `Error al extraer comentarios de ${platform}` });
+    }
+};
+
+module.exports = { getSocialMediaComments };
