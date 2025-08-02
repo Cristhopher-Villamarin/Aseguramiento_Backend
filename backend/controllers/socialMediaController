@@ -1,9 +1,13 @@
 const { ApifyClient } = require('apify-client');
+const axios = require('axios'); // Añadir esta dependencia
 
 // Initialize the ApifyClient with a token
 const client = new ApifyClient({
     token: 'apify_api_u4HBr8LyQL9FIGd0sejBavopuqvhxZ3Ryt0t',
 });
+
+// Configuración de la API de Python (ajusta la URL según tu entorno)
+const SENTIMENT_API_URL = 'http://127.0.0.1:5000/clasificar_comentario';
 
 // Platform-specific configurations
 const platformConfig = {
@@ -54,7 +58,7 @@ const platformConfig = {
 
 const getSocialMediaComments = async (req, res) => {
     try {
-        const { url, platform } = req.body; // Expect URL and platform in the request body
+        const { url, platform } = req.body;
 
         if (!url) {
             return res.status(400).json({ error: 'La URL de la publicación es requerida' });
@@ -95,4 +99,38 @@ const getSocialMediaComments = async (req, res) => {
     }
 };
 
-module.exports = { getSocialMediaComments };
+const analyzeSentiment = async (req, res) => {
+    try {
+        const { comments } = req.body;
+
+        if (!comments || !Array.isArray(comments) || comments.length === 0) {
+            return res.status(400).json({ error: 'Se requiere un array de comentarios no vacío' });
+        }
+
+        // Clasificar sentimientos de los comentarios
+        const commentsWithSentiment = await Promise.all(
+            comments.map(async (comment) => {
+                try {
+                    const response = await axios.post(SENTIMENT_API_URL, { comentario: comment });
+                    return {
+                        text: comment,
+                        sentiment: response.data.sentimiento
+                    };
+                } catch (error) {
+                    console.error(`Error al clasificar el comentario "${comment}":`, error);
+                    return {
+                        text: comment,
+                        sentiment: 'Error al clasificar'
+                    };
+                }
+            })
+        );
+
+        res.status(200).json({ comments: commentsWithSentiment });
+    } catch (error) {
+        console.error('Error al analizar sentimientos:', error);
+        res.status(500).json({ error: 'Error al analizar sentimientos' });
+    }
+};
+
+module.exports = { getSocialMediaComments, analyzeSentiment };
