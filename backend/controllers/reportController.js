@@ -1,3 +1,4 @@
+// reportController.js
 const { validationResult } = require('express-validator');
 const reportService = require('../services/reportService');
 
@@ -8,10 +9,10 @@ const createReport = async (req, res) => {
       return res.status(400).json({ errors: errors.array() });
     }
 
-    const { title } = req.body;
+    const { title, url, comments } = req.body;
     const { topicId } = req.params;
     const userId = req.user; // Obtenido de authMiddleware
-    const report = await reportService.createReport(title, topicId, userId);
+    const report = await reportService.createReport(title, topicId, userId, url, comments);
     res.status(201).json({ message: 'Reporte creado exitosamente', report });
   } catch (error) {
     res.status(400).json({ error: error.message });

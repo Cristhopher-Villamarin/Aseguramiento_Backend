@@ -1,8 +1,9 @@
+// reportService.js
 const { admin, db } = require('../config/firebase');
 
-const createReport = async (title, topicId, userId) => {
+const createReport = async (title, topicId, userId, url, comments) => {
   try {
-    console.log('Creando reporte:', { title, topicId, userId });
+    console.log('Creando reporte:', { title, topicId, userId, url });
 
     // Verificar que el tema exista y pertenezca al usuario
     const topicRef = db.collection('topics').doc(topicId);
@@ -28,7 +29,8 @@ const createReport = async (title, topicId, userId) => {
       title,
       topicId,
       userId,
-      url: '', // Campo para URL (vacío por ahora, para futura integración)
+      url,
+      comments: comments || [],
       createdAt: admin.firestore.FieldValue.serverTimestamp(),
     };
     await reportRef.set(report);
@@ -108,7 +110,7 @@ const updateReport = async (reportId, topicId, title, userId) => {
     };
     await reportRef.update(updatedReport);
     console.log('Reporte actualizado:', reportId);
-    return { id: reportId, ...updatedReport, topicId, userId, createdAt: reportDoc.data().createdAt, url: reportDoc.data().url };
+    return { id: reportId, ...updatedReport, topicId, userId, createdAt: reportDoc.data().createdAt, url: reportDoc.data().url, comments: reportDoc.data().comments };
   } catch (error) {
     console.error('Error en updateReport:', error);
     throw new Error('Error al actualizar el reporte: ' + error.message);
